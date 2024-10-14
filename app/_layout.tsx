@@ -11,6 +11,7 @@ import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { PaperProvider } from "react-native-paper";
+import { StatusBar } from "expo-status-bar";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,6 +33,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <StatusBar style="light" />
       <PaperProvider>
         <Stack
           screenOptions={{
@@ -42,8 +44,13 @@ export default function RootLayout() {
             headerTitleStyle: {
               fontWeight: "bold",
             },
+            headerShown: false,
           }}
-        ></Stack>
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="configuration" />
+          <Stack.Screen name="trip" />
+        </Stack>
       </PaperProvider>
     </ThemeProvider>
   );
