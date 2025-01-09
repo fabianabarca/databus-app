@@ -1,13 +1,16 @@
-import { View, TouchableOpacity } from "react-native";
-import { TripStyles as S } from "@/styles/trip";
-import Header from "@/components/Header";
-import { StatusBar } from "expo-status-bar";
-import { Text } from "react-native-paper";
-import { Link, useRouter } from "expo-router";
-import TripInfoContainer from "@/components/TripInfoContainer";
+import {View, TouchableOpacity} from 'react-native';
+import {TripStyles as S} from '@/src/styles/trip';
+import Header from '@/components/Header';
+import {StatusBar} from 'expo-status-bar';
+import {Text} from 'react-native-paper';
+import {Link, useRouter} from 'expo-router';
+import TripInfoContainer from '@/components/TripInfoContainer';
+import {useLocation} from '@providers/LocationProvider';
 
 const Trip = () => {
   const router = useRouter();
+  const {location} = useLocation();
+  console.log('Location: ', location);
 
   return (
     <View style={S.container}>
@@ -15,7 +18,7 @@ const Trip = () => {
       <Header
         driverName="Fabián"
         variant="2"
-        onButtonClick={() => router.push("/")}
+        onButtonClick={() => router.push('/')}
         pageTitle="Viaje en progreso"
       />
 

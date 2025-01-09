@@ -1,10 +1,10 @@
-import { View, Image, TouchableOpacity } from "react-native";
-import { HomeStyles as S } from "@/styles/home";
-import Header from "@/components/Header";
-import { StatusBar } from "expo-status-bar";
-import { Text, Icon } from "react-native-paper";
-import HomeInfoContainer from "@/components/HomeInfoContainer";
-import { Link } from "expo-router";
+import {View, Image, TouchableOpacity} from 'react-native';
+import {HomeStyles as S} from '@/styles/home';
+import Header from '@/components/Header';
+import {StatusBar} from 'expo-status-bar';
+import {Text, Icon} from 'react-native-paper';
+import HomeInfoContainer from '@/components/HomeInfoContainer';
+import {Link} from 'expo-router';
 
 const Home = () => {
   return (
@@ -13,7 +13,7 @@ const Home = () => {
       <Header driverName="Fabián" variant="1" />
 
       <View style={S.content}>
-        <Image source={require("../assets/images/busAzul.png")} />
+        <Image source={require('@assets/images/busAzul.png')} />
         <Text style={S.description}>
           Servicio de buses de la Universidad de Costa Rica
         </Text>

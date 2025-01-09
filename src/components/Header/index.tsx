@@ -58,7 +58,7 @@ const Header = ({
           >
             {pageTitle}
           </Text>
-          <Image source={require("../../assets/images/b_blanco.png")} />
+          <Image source={require("@assets/images/b_blanco.png")} />
         </View>
       )}
     </>

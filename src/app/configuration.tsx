@@ -1,9 +1,9 @@
-import { View, TouchableOpacity, TextInput } from "react-native";
-import { ConfigurationStyles as S } from "@/styles/configuration";
-import Header from "@/components/Header";
-import { StatusBar } from "expo-status-bar";
-import { Text } from "react-native-paper";
-import { Link, useRouter } from "expo-router";
+import {View, TouchableOpacity, TextInput} from 'react-native';
+import {ConfigurationStyles as S} from '@/src/styles/configuration';
+import Header from '@/components/Header';
+import {StatusBar} from 'expo-status-bar';
+import {Text} from 'react-native-paper';
+import {Link, useRouter} from 'expo-router';
 
 const Configuration = () => {
   const router = useRouter();
@@ -15,7 +15,7 @@ const Configuration = () => {
         driverName="Fabián"
         variant="2"
         hasBackButton
-        onButtonClick={() => router.push("/")}
+        onButtonClick={() => router.push('/')}
         pageTitle="Configuración del viaje"
       />
 
