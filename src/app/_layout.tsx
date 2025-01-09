@@ -8,7 +8,6 @@ import 'react-native-reanimated';
 import {useColorScheme} from '@hooks/useColorScheme';
 import {PaperProvider} from 'react-native-paper';
 import {StatusBar} from 'expo-status-bar';
-import LocationProvider from '@providers/LocationProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,24 +31,22 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <StatusBar style="light" />
       <PaperProvider>
-        <LocationProvider>
-          <Stack
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: '#005DA4',
-              },
-              headerTintColor: '#fff',
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="configuration" />
-            <Stack.Screen name="trip" />
-          </Stack>
-        </LocationProvider>
+        <Stack
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: '#005DA4',
+            },
+            headerTintColor: '#fff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="configuration" />
+          <Stack.Screen name="trip" />
+        </Stack>
       </PaperProvider>
     </ThemeProvider>
   );

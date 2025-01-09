@@ -5,7 +5,7 @@ import {StatusBar} from 'expo-status-bar';
 import {Text} from 'react-native-paper';
 import {Link, useRouter} from 'expo-router';
 import TripInfoContainer from '@/components/TripInfoContainer';
-import {useLocation} from '@providers/LocationProvider';
+import {useLocation} from '@hooks/location';
 
 const Trip = () => {
   const router = useRouter();
