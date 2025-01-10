@@ -1,4 +1,4 @@
-class Api {
+export class Api {
   private static _instance: Api;
   private baseUrl: string;
   private api_token: string;
@@ -16,7 +16,7 @@ class Api {
   }
 
   public getUser(userId: string): Promise<User> {
-    return this.request<User>(`/user/${userId}`, {method: 'GET'});
+    return this.request<User>(`/operator`, {method: 'GET'});
   }
 
   public createPost(post: Post): Promise<Post> {
@@ -28,6 +28,8 @@ class Api {
   }
 
   private async request<T>(endpoint: string, options: RequestInit): Promise<T> {
+    console.log(`${this.baseUrl}${endpoint}?api_key=${this.api_token}`);
+
     const response = await fetch(
       `${this.baseUrl}${endpoint}?api_key=${this.api_token}`,
       options,

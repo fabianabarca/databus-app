@@ -6,13 +6,19 @@ import {Text, Icon} from 'react-native-paper';
 import HomeInfoContainer from '@/components/HomeInfoContainer';
 import {Link} from 'expo-router';
 
+import {Api} from '@/api/api-client';
+
 const Home = () => {
   // Usage:
   const apiFacade = Api.getInstance(
-    'https://my-backend.com/api',
-    process.env.EXPO_API_TOKEN || '',
+    'https://realtime.bucr.digital/api',
+    process.env.EXPO_PUBLIC_API_TOKEN || '',
   );
-  apiFacade.getUser('123').then(console.log);
+  console.log(process.env.EXPO_PUBLIC_API_TOKEN);
+
+  apiFacade.getUser('123').catch(error => {
+    console.log(error);
+  });
 
   return (
     <View style={S.container}>
