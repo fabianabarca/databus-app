@@ -7,6 +7,13 @@ import HomeInfoContainer from '@/components/HomeInfoContainer';
 import {Link} from 'expo-router';
 
 const Home = () => {
+  // Usage:
+  const apiFacade = Api.getInstance(
+    'https://my-backend.com/api',
+    process.env.EXPO_API_TOKEN || '',
+  );
+  apiFacade.getUser('123').then(console.log);
+
   return (
     <View style={S.container}>
       <StatusBar style="light" />
