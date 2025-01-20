@@ -1,14 +1,129 @@
+type CurrentStatus = 'INCOMING_AT' | 'STOPPED_AT' | 'IN_TRANSIT_TO';
+type CongestionLevel =
+  | 'UNKNOWN_CONGESTION_LEVEL'
+  | 'RUNNING_SMOOTHLY'
+  | 'STOP_AND_GO'
+  | 'CONGESTION'
+  | 'SEVERE_CONGESTION';
+type IsWheelChairAccesible =
+  | 'NO_VALUE'
+  | 'UNKNOWN'
+  | 'WHEELCHAIR_ACCESSIBLE'
+  | 'WHEELCHAIR_INACCESSIBLE';
+type JourneyStatus = 'IN_PROGRESS' | 'COMPLETED' | 'INTERRUPTED';
+type OccupancyStatus =
+  | 'EMPTY'
+  | 'MANY_SEATS_AVAILABLE'
+  | 'FEW_SEATS_AVAILABLE'
+  | 'STANDING_ROOM_ONLY'
+  | 'CRUSHED_STANDING_ROOM_ONLY'
+  | 'FULL'
+  | 'NOT_ACCEPTING_PASSENGERS'
+  | 'NO_DATA_AVAILABLE'
+  | 'NOT_BOARDABLE';
+type ScheduleStatus =
+  | 'SCHEDULED'
+  | 'ADDED'
+  | 'UNSCHEDULED'
+  | 'CANCELED'
+  | 'DUPLICATED'
+  | 'DELETED';
+type ServiceDisponibility =
+  | 'NO_VALUE'
+  | 'UNKNOWN'
+  | 'AVAILABLE'
+  | 'UNAVAILABLE';
+
+export type Equipment = {
+  equipment_id: string;
+  serial_number: string;
+};
+
+export type EquipmentDetails = {
+  provider_id: string;
+  agency_id: string;
+  vehicle_id: string;
+  serial_number: string;
+  brand: string;
+  model: string;
+  software_version: string;
+  provider?: {
+    vehicle?: boolean;
+    operator?: boolean;
+    journey?: boolean;
+    position?: boolean;
+    progression?: boolean;
+    occupancy?: boolean;
+    conditions?: boolean;
+    emissions?: boolean;
+    travelers?: boolean;
+    authorizations?: boolean;
+    fares?: boolean;
+    transfers?: boolean;
+    alerts?: boolean;
+  };
+};
+
+export type Journey = {
+  journey_id: number;
+};
+
+export type JourneyDetails = {
+  equipment_id: string;
+  operator_id: string;
+  route_id: string;
+  trip_id: string;
+  direction: string;
+  shape_id: number;
+  start_date: string;
+  start_time: string;
+  schedule_relationship: ScheduleStatus;
+  journey_status: JourneyStatus;
+};
+
+export type Occupancy = {
+  journey_id: number;
+  occupancy_count: number;
+  occupancy_percentage: number;
+  occupancy_status: OccupancyStatus;
+  is_wheelchair_accesible: IsWheelChairAccesible;
+};
+
 export type Operator = {
   operator_id: string;
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
 };
 
-export type Location = {};
-
-export type JourneyId = {
+export type Position = {
   journey_id: number;
+  timestamp: number;
+  latitude: number;
+  longitude: number;
+  altitude?: number;
+  speed?: number;
+  bearing?: number;
+  odometer?: number;
+};
+
+export type Progression = {
+  journey_id: number;
+  current_stop_sequence: number;
+  stop_id: number;
+  current_status: CurrentStatus;
+  congestion_level: CongestionLevel;
+};
+
+export type StopRequest = {
+  route_id: string;
+  shape_id: string;
+};
+
+export type StopResponse = {
+  stop_id: string;
+  stop_sequence: number;
+  shape_dist_traveled: number;
 };
 
 export type Trip = {
@@ -17,8 +132,29 @@ export type Trip = {
   shape_id: string;
 };
 
-export type Stop = {
-  stop_id: string;
-  stop_sequence: number;
-  shape_distance_traveled: number;
+export type Vehicle = {
+  vehicle_id: string;
+  label: string;
+  license_plate: string;
+  agency?: string;
+  wheelchair_accessible?: IsWheelChairAccesible;
+  wifi?: ServiceDisponibility;
+  air_conditioning?: ServiceDisponibility;
+  mobile_charging?: ServiceDisponibility;
+  bike_rack?: ServiceDisponibility;
+  has_screen?: boolean;
+  has_headsign_screen?: boolean;
+  has_audio?: boolean;
 };
+
+type SuccessResponse<T> = {
+  status: 'success';
+  data: T;
+};
+
+type ErrorResponse = {
+  status: 'error';
+  message: string;
+};
+
+type Response<T> = SuccessResponse<T> | ErrorResponse;

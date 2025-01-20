@@ -1,3 +1,5 @@
+import {Operator} from '@/types';
+
 export class Api {
   private static _instance: Api;
   private baseUrl: string;
@@ -15,17 +17,17 @@ export class Api {
     return Api._instance;
   }
 
-  public getUser(userId: string): Promise<User> {
-    return this.request<User>(`/operator`, {method: 'GET'});
+  public getUser(userId: string): Promise<Operator> {
+    return this.request<Operator>(`/operator`, {method: 'GET'});
   }
 
-  public createPost(post: Post): Promise<Post> {
-    return this.request<Post>(`/posts`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(post),
-    });
-  }
+  // public createPost(post: Post): Promise<Post> {
+  //   return this.request<Post>(`/posts`, {
+  //     method: 'POST',
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: JSON.stringify(post),
+  //   });
+  // }
 
   private async request<T>(endpoint: string, options: RequestInit): Promise<T> {
     console.log(`${this.baseUrl}${endpoint}?api_key=${this.api_token}`);
