@@ -9,16 +9,8 @@ import {Link} from 'expo-router';
 import {Api} from '@/api/api-client';
 
 const Home = () => {
-  // Usage:
-  const apiFacade = Api.getInstance(
-    'https://realtime.bucr.digital/api',
-    process.env.EXPO_PUBLIC_API_TOKEN || '',
-  );
-  console.log(process.env.EXPO_PUBLIC_API_TOKEN);
-
-  apiFacade.getUser('123').catch(error => {
-    console.log(error);
-  });
+  const api = Api.getInstance();
+  api.get<any>('/vehicle').then(console.log).catch(console.error);
 
   return (
     <View style={S.container}>

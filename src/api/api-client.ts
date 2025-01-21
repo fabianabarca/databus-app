@@ -1,44 +1,61 @@
-import {Operator} from '@/types';
+import {Config} from '@/api/api-config';
 
 export class Api {
   private static _instance: Api;
-  private baseUrl: string;
-  private api_token: string;
 
-  private constructor(baseUrl: string, api_token: string) {
-    this.baseUrl = baseUrl;
-    this.api_token = api_token;
-  }
-
-  public static getInstance(baseUrl: string, api_token: string): Api {
+  public static getInstance(baseUrl?: string, apiToken?: string): Api {
     if (!Api._instance) {
-      Api._instance = new Api(baseUrl, api_token);
+      Config.setConfig({baseUrl, apiToken});
+      Api._instance = new Api();
     }
     return Api._instance;
   }
 
-  public getUser(userId: string): Promise<Operator> {
-    return this.request<Operator>(`/operator`, {method: 'GET'});
+  public async request<T>(endpoint: string, options: RequestInit): Promise<T> {
+    const baseUrl = Config.getBaseUrl();
+    const apiToken = Config.getApiToken();
+  
+    const headers = {
+      ...options.headers,
+      Authorization: `Bearer ${apiToken}`,
+      "Content-Type": "application/json",
+    };
+
+    try {
+      const response = await fetch(`${baseUrl}${endpoint}`, {
+        ...options,
+        headers,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json();
+        throw new Error(errorBody.message || `HTTP Error: ${response.status}`);
+      }
+
+      return response.json() as Promise<T>;
+    } catch (error) {
+      console.error("API Request Error:", error);
+      throw error;
+    }
   }
 
-  // public createPost(post: Post): Promise<Post> {
-  //   return this.request<Post>(`/posts`, {
-  //     method: 'POST',
-  //     headers: {'Content-Type': 'application/json'},
-  //     body: JSON.stringify(post),
-  //   });
-  // }
+  public async get<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+    const query = new URLSearchParams(params).toString();
+    return this.request<T>(`${endpoint}?${query}`, { method: 'GET' });
+  }
 
-  private async request<T>(endpoint: string, options: RequestInit): Promise<T> {
-    console.log(`${this.baseUrl}${endpoint}?api_key=${this.api_token}`);
+  public async post<T, U>(endpoint: string, body: U): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
 
-    const response = await fetch(
-      `${this.baseUrl}${endpoint}?api_key=${this.api_token}`,
-      options,
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP Error: ${response.status}`);
-    }
-    return response.json() as Promise<T>;
+  public async patch<T, U>(endpoint: string, body: U): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
   }
 }
+
