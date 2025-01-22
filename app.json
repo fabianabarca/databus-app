@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#005DA4"
     },
     "ios": {
       "supportsTablet": true
@@ -32,6 +32,7 @@
     ],
     "experiments": {
       "typedRoutes": true,
+      "newArchEnabled": true,
     }
   }
 }

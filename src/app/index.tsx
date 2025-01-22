@@ -10,7 +10,14 @@ import {Api} from '@/api/api-client';
 
 const Home = () => {
   const api = Api.getInstance();
-  api.get<any>('/vehicle').then(console.log).catch(console.error);
+  api
+    .get<any>('/operator', {route_id: "bUCR-L1", shape_id: "desde_educacion"})
+    .then(data => {
+      console.log('Result: ', data);
+    })
+    .catch(console.error);
+
+
 
   return (
     <View style={S.container}>

@@ -14,11 +14,11 @@ export class Api {
   public async request<T>(endpoint: string, options: RequestInit): Promise<T> {
     const baseUrl = Config.getBaseUrl();
     const apiToken = Config.getApiToken();
-  
+
     const headers = {
       ...options.headers,
       Authorization: `Bearer ${apiToken}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     };
 
     try {
@@ -34,14 +34,18 @@ export class Api {
 
       return response.json() as Promise<T>;
     } catch (error) {
-      console.error("API Request Error:", error);
+      console.error('API Request Error:', error);
       throw error;
     }
   }
 
-  public async get<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+  public async get<T>(
+    endpoint: string,
+    params: Record<string, string> = {},
+  ): Promise<T> {
     const query = new URLSearchParams(params).toString();
-    return this.request<T>(`${endpoint}?${query}`, { method: 'GET' });
+
+    return this.request<T>(`${endpoint}?${query}`, {method: 'GET'});
   }
 
   public async post<T, U>(endpoint: string, body: U): Promise<T> {
@@ -58,4 +62,3 @@ export class Api {
     });
   }
 }
-
