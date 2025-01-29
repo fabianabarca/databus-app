@@ -7,17 +7,20 @@ import HomeInfoContainer from '@/components/HomeInfoContainer';
 import {Link} from 'expo-router';
 
 import {Api} from '@/api/api-client';
+import {useLocation} from '@/hooks/location';
+import {Provider} from '../types';
 
 const Home = () => {
+  // const {location, errorMsg, loading} = useLocation();
   const api = Api.getInstance();
   api
-    .get<any>('/operator', {route_id: "bUCR-L1", shape_id: "desde_educacion"})
+    .get<Provider[]>('/data-provider/')
     .then(data => {
       console.log('Result: ', data);
     })
     .catch(console.error);
 
-
+  // console.log('Location: ', location);
 
   return (
     <View style={S.container}>

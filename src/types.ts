@@ -64,6 +64,21 @@ export type EquipmentDetails = {
   };
 };
 
+export type Route = {
+  route_id: string;
+  agency_id: string;
+  route_short_name: string;
+  url?: string | null;
+  feed?: number;
+  route_long_name?: string;
+  route_desc?: string;
+  route_type?: number;
+  route_url?: string;
+  route_color?: string;
+  route_text_color?: string;
+  route_sort_order?: number | null;
+};
+
 export type Journey = {
   journey_id: number;
 };
@@ -147,14 +162,9 @@ export type Vehicle = {
   has_audio?: boolean;
 };
 
-type SuccessResponse<T> = {
-  status: 'success';
-  data: T;
+export type Provider = {
+  url: string,
+  agency: string[];
+  name: string;
+  description: string;
 };
-
-type ErrorResponse = {
-  status: 'error';
-  message: string;
-};
-
-type Response<T> = SuccessResponse<T> | ErrorResponse;
