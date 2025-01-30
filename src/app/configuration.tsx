@@ -1,49 +1,50 @@
-import {View, TouchableOpacity, TextInput} from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 import {ConfigurationStyles as S} from '@/src/styles/configuration';
 import Header from '@/components/Header';
 import {StatusBar} from 'expo-status-bar';
 import {Text} from 'react-native-paper';
 import {Link, useRouter} from 'expo-router';
 
+import {TextInput} from 'react-native-paper';
+import AutoCompleteTextInput from '@/components/AutoCompleteTextInput';
+
 const Configuration = () => {
   const router = useRouter();
+  const suggestions = ['bUCR1 L1', 'bUCR1 L2'];
 
   return (
-    <View style={S.container}>
-      <StatusBar style="light" />
-      <Header
-        driverName="Fabián"
-        variant="2"
-        hasBackButton
-        onButtonClick={() => router.push('/')}
-        pageTitle="Configuración del viaje"
-      />
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View style={S.container}>
+        <StatusBar style="light" />
+        <Header
+          driverName="Fabián"
+          variant="2"
+          hasBackButton
+          onButtonClick={() => router.push('/')}
+          pageTitle="Configuración del viaje"
+        />
 
-      <View style={S.content}>
-        {/* Form title and container */}
-        <Text style={S.formText}>Datos del viaje</Text>
-        <View style={S.formContainer}>
-          <TextInput style={S.input} placeholder="Ruta" />
-          <TextInput style={S.input} placeholder="Día de operación" />
-          <TextInput style={S.input} placeholder="Recorrido" />
-          <TextInput style={S.input} placeholder="Sentido del recorrido" />
-          <TouchableOpacity style={S.formButton}>
-            <Text style={S.formTextButton}>Buscar viaje</Text>
+        <View style={S.content}>
+          {/* Form title and container */}
+          <Text style={S.formText}>Datos del viaje</Text>
+          <View style={S.formContainer}>
+            <AutoCompleteTextInput label="Ruta" suggestions={suggestions} />
+            <TextInput label="Recorrido" style={S.input} mode="outlined" />
+          </View>
+        </View>
+
+        <Link href="/trip" asChild>
+          <TouchableOpacity style={S.startTripButton}>
+            <Text style={S.buttonText}>Comenzar viaje</Text>
           </TouchableOpacity>
-        </View>
-
-        <View style={S.tripContainer}>
-          <Text style={S.trip}>Viaje seleccionado:</Text>
-          <Text style={S.tripHour}>10:55 am</Text>
-        </View>
+        </Link>
       </View>
-
-      <Link href="/trip" asChild>
-        <TouchableOpacity style={S.startTripButton}>
-          <Text style={S.buttonText}>Comenzar viaje</Text>
-        </TouchableOpacity>
-      </Link>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
