@@ -17,20 +17,28 @@ const AutocompleteTextInput = ({
   // Sample suggestions for autocomplete
 
   // Handle change in input text
-  const handleTextChange = input => {
+  const handleTextChange = (input: string) => {
     setText(input);
     if (input) {
-      const filteredSuggestions = suggestions.filter(item =>
+      const filteredSuggestions = suggestions.filter((item: string) =>
         item.toLowerCase().includes(input.toLowerCase()),
       );
       setFilteredData(filteredSuggestions);
     } else {
-      setFilteredData([]);
+      setFilteredData(suggestions);
     }
   };
 
+  const handleTextPress = () => {
+    setFilteredData(suggestions);
+  };
+
+  const handleBLur = () => {
+    setFilteredData([]);
+  };
+
   // Handle selection of an autocomplete suggestion
-  const handleSuggestionSelect = suggestion => {
+  const handleSuggestionSelect = (suggestion: string) => {
     setText(suggestion);
     setFilteredData([]); // Hide suggestions after selection
   };
@@ -41,13 +49,10 @@ const AutocompleteTextInput = ({
         label={label}
         value={text}
         onChangeText={handleTextChange}
+        onPress={handleTextPress}
+        onBlur={handleBLur}
         mode="outlined"
         style={styles.input}
-        theme={{
-          colors: {
-            primary: '#005DA4',
-          },
-        }}
       />
 
       {/* Display filtered suggestions */}
@@ -55,8 +60,8 @@ const AutocompleteTextInput = ({
         <FlatList
           style={styles.suggestionList}
           data={filteredData}
-          keyExtractor={item => item}
-          renderItem={({item}) => (
+          keyExtractor={(item: string) => item}
+          renderItem={({item}: {item: string}) => (
             <TouchableOpacity onPress={() => handleSuggestionSelect(item)}>
               <View style={styles.suggestionItem}>
                 <Text>{item}</Text>
@@ -94,12 +99,12 @@ const useStyles = () => {
 
       // Shadow properties for iOS
       shadowColor: '#000',
-      shadowOffset: {width: 10, height: 4}, // Horizontal and vertical offset
-      shadowOpacity: 0.5, // Opacity of the shadow
-      shadowRadius: 5, // Blur radius
+      shadowOffset: {width: 10, height: 4},
+      shadowOpacity: 0.5,
+      shadowRadius: 5,
 
       // Elevation for Android
-      elevation: 5, // Android-specific shadow,
+      elevation: 5,
     },
   });
 };
