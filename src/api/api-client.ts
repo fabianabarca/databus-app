@@ -1,24 +1,37 @@
 import {Config} from '@/api/api-config';
+import * as SecureStore from 'expo-secure-store';
 
 export class Api {
-  private static _instance: Api;
+  private static _instance: Api | null = null;
 
-  public static getInstance(baseUrl?: string, apiToken?: string): Api {
+  private constructor() {}
+
+  public static getInstance(): Api {
     if (!Api._instance) {
-      Config.setConfig({baseUrl, apiToken});
       Api._instance = new Api();
     }
     return Api._instance;
   }
 
+  private async getAuthHeaders() {
+    const apiToken = await SecureStore.getItemAsync('authToken');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    if (apiToken) {
+      headers['Authorization'] = `Bearer ${apiToken}`;
+    }
+
+    return headers;
+  }
+
   public async request<T>(endpoint: string, options: RequestInit): Promise<T> {
     const baseUrl = Config.getBaseUrl();
-    const apiToken = Config.getApiToken();
 
     const headers = {
+      ...(await this.getAuthHeaders()),
       ...options.headers,
-      Authorization: `Bearer ${apiToken}`,
-      'Content-Type': 'application/json',
     };
 
     try {
@@ -60,5 +73,13 @@ export class Api {
       method: 'PATCH',
       body: JSON.stringify(body),
     });
+  }
+
+  public async signIn(username: string, password: string): Promise<{ token: string, user_id: string }> {
+    const response = await this.post<{token: string; user_id: string}, {username: string, password: string}>(
+      '/auth/login',
+      {username, password},
+    );
+    return response;
   }
 }

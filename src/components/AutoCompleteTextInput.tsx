@@ -40,7 +40,7 @@ const AutocompleteTextInput = ({
   // Handle selection of an autocomplete suggestion
   const handleSuggestionSelect = (suggestion: string) => {
     setText(suggestion);
-    setFilteredData([]); // Hide suggestions after selection
+    setFilteredData([]);
   };
 
   return (

@@ -1,4 +1,5 @@
 import {
+  Alert,
   Image,
   Keyboard,
   StyleSheet,
@@ -11,13 +12,59 @@ import {useColorScheme} from '@hooks/useColorScheme';
 
 import {Link, Stack} from 'expo-router';
 import {Button, Divider, TextInput} from 'react-native-paper';
+import {useRef, useState} from 'react';
+
+const validUsername = 'user';
+const validPassword = 'secret';
 
 const LogInScreen = () => {
   const styles = useStyles();
 
-  const singIn = () => {
-    console.log('Signing in...');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const usernameInputRef = useRef<TextInput>(null);
+
+  async function signInWithUsername() {
+    setLoading(true);
+    if (!validateInput()) {
+      setLoading(false);
+      return;
+    }
+
+    // TODO: Sign In with API
+    if (username === validUsername && password === password) {
+      console.log("Signed In");
+      router.push('/');
+    } else {
+      Alert.alert('Usuario o contraseña incorrectos');
+    }
+
+    setLoading(false);
+    resetFields();
+  }
+
+  const resetFields = () => {
+    setUsername('');
+    setPassword('');
   };
+
+  const validateInput = () => {
+    setError('');
+    if (!username) {
+      setError('Se requiere el usuario');
+      return false;
+    }
+    if (!password) {
+      setError('Se requiere la constraseña');
+      return false;
+    }
+    return true;
+  };
+
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -31,24 +78,39 @@ const LogInScreen = () => {
 
         <Text style={styles.text}>Ingrese a la cuenta de conductor</Text>
         <TextInput
-          label="Correo electrónico"
+          label="Usuario"
+          value={username}
+          onChangeText={setUsername}
           style={styles.input}
           mode="outlined"
         />
         <TextInput
-          secureTextEntry
+          secureTextEntry={!isPasswordVisible}
           label="Contraseña"
+          value={password}
+          right={
+            <TextInput.Icon
+              icon={isPasswordVisible ? 'eye-off' : 'eye'}
+              onPress={() => {
+                setIsPasswordVisible(!isPasswordVisible);
+              }}
+              style={styles.inputIcon}
+            />
+          }
+          onChangeText={setPassword}
           style={styles.input}
           mode="outlined"
-          right={<TextInput.Icon icon="eye" style={styles.inputIcon} />}
         />
+
+        <Text style={{marginTop: 10, color: 'red', fontWeight: '500'}}>{error}</Text>
         <Button
           style={styles.button}
           mode="contained"
-          onPress={singIn}
+          disabled={loading}
+          onPress={signInWithUsername}
           labelStyle={styles.buttonText}
         >
-          Ingresar
+          {loading ? 'Ingresando...' : 'Ingresar'}
         </Button>
 
         <View style={styles.dividerContainer}>
@@ -57,6 +119,7 @@ const LogInScreen = () => {
           <Divider style={styles.divider} />
         </View>
 
+        {/* TODO: navigate the user to place where they can start the process of asking for an account. */}
         <Link href={'/'}>
           <Text style={styles.linkText}>Solcitar Cuenta</Text>
         </Link>
