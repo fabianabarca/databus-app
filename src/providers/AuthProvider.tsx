@@ -7,22 +7,29 @@ import {
 } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import {Operator} from '@/types';
-import {Api} from '@/api/api-client';
+import {api} from '@/api/api-client';
+import {longPressGestureHandlerProps} from 'react-native-gesture-handler/lib/typescript/handlers/LongPressGestureHandler';
+import {logToLogBoxAndConsole} from 'react-native-reanimated/lib/typescript/logger';
 
+const testUserId = '1-1234-5678';
+
+// TODO: Refactor to fetch user info on useEffect, and replace session boolean.
 type AuthData = {
   user: Operator | null;
   // token: string | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  logIn: (email: string, password: string) => Promise<void>;
+  logOut: () => Promise<void>;
   loading: boolean;
+  session: boolean;
 };
 
 const AuthContext = createContext<AuthData>({
   user: null,
   // token: null,
-  signIn: async () => {},
-  signOut: async () => {},
+  logIn: async () => {},
+  logOut: async () => {},
   loading: true,
+  session: false,
 });
 
 export default function AuthProvider({children}: PropsWithChildren) {
@@ -30,6 +37,7 @@ export default function AuthProvider({children}: PropsWithChildren) {
   const [userId, setUserId] = useState<string | null>(null);
   // const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(true);
 
   // Load stored token and user data
   useEffect(() => {
@@ -43,29 +51,40 @@ export default function AuthProvider({children}: PropsWithChildren) {
         // Fetch user details if needed
         setLoading(false);
       }
+      // TODO: remove when the userId is sorted out propperly
+      setLoading(false);
     };
     loadSession();
   }, []);
 
   // Sign in function
-  const signIn = async (email: string, password: string) => {
-    const response = await Api.getInstance().signIn(email, password);
-    const {token, user_id} = response;
+  const logIn = async (username: string, password: string) => {
+    let response: {token: string} = {token: ''};
+    try {
+      response = await api.logIn(username, password);
+      console.log('Response: ', response);
 
-    // setToken(token);
-    setUser(user);
-    // api.defaults.headers.Authorization = `Bearer ${token}`;
+      // const {token, user_id} = response;
+      const {token} = response;
+      setSession(true);
 
-    // Store in SecureStore
-    await SecureStore.setItemAsync('authToken', token);
-    await SecureStore.setItemAsync('userId', user_id);
+      // setUser(user);
 
-    // Set in state
-    setUserId(user_id);
+      // Store in SecureStore
+      await SecureStore.setItemAsync('authToken', token);
+      await SecureStore.setItemAsync('userId', testUserId);
+
+
+      const test = await api.get<any>(`operator/${testUserId}/`);
+      // Set in state
+      // setUserId(user_id);
+    } catch (error: any) {
+      throw error;
+    }
   };
 
   // Sign out function
-  const signOut = async () => {
+  const logOut = async () => {
     // Remove from SecureStore
     await SecureStore.deleteItemAsync('authToken');
     await SecureStore.deleteItemAsync('userId');
@@ -75,7 +94,7 @@ export default function AuthProvider({children}: PropsWithChildren) {
   };
 
   return (
-    <AuthContext.Provider value={{user, signIn, signOut, loading}}>
+    <AuthContext.Provider value={{user, logIn, logOut, loading, session}}>
       {children}
     </AuthContext.Provider>
   );

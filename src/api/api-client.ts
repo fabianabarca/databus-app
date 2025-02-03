@@ -1,5 +1,6 @@
 import {Config} from '@/api/api-config';
 import * as SecureStore from 'expo-secure-store';
+import {lightGreen100} from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 export class Api {
   private static _instance: Api | null = null;
@@ -17,6 +18,7 @@ export class Api {
     const apiToken = await SecureStore.getItemAsync('authToken');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      Accept: 'application/json',
     };
 
     if (apiToken) {
@@ -34,19 +36,35 @@ export class Api {
       ...options.headers,
     };
 
+    // console.log('Endpoint: ', `${baseUrl}${endpoint}`);
+    // console.log('Options: ', options);
+    // console.log(headers);
+
     try {
       const response = await fetch(`${baseUrl}${endpoint}`, {
         ...options,
         headers,
       });
 
-      if (!response.ok) {
-        const errorBody = await response.json();
-        throw new Error(errorBody.message || `HTTP Error: ${response.status}`);
-      }
+      const contentType = response.headers.get('content-type');
 
+      if (!response.ok) {
+        let errorBody: any = {message: `HTTP Error: ${response.status}`};
+
+        if (contentType?.includes('application/json')) {
+          errorBody = await response.json();
+        } else {
+          const errorText = await response.text();
+          console.error('Server Error Page:', errorText);
+          errorBody = {
+            message: `Server error occurred. Please try again later.`,
+          };
+        }
+
+        throw errorBody;
+      }
       return response.json() as Promise<T>;
-    } catch (error) {
+    } catch (error: any) {
       console.error('API Request Error:', error);
       throw error;
     }
@@ -75,11 +93,27 @@ export class Api {
     });
   }
 
-  public async signIn(username: string, password: string): Promise<{ token: string, user_id: string }> {
-    const response = await this.post<{token: string; user_id: string}, {username: string, password: string}>(
-      '/auth/login',
-      {username, password},
-    );
-    return response;
+  public async logIn(
+    username: string,
+    password: string,
+  ): Promise<{token: string}> {
+    try {
+      const response = await this.post<
+        {token: string},
+        {username: string; password: string}
+      >('/login/', {username, password});
+
+      return response;
+    } catch (error: any) {
+      let errorBody: any = {
+        message: error.message || 'Unknown error occurred.',
+      };
+      if (error?.non_field_errors) {
+        errorBody = {message: error.non_field_errors.join(' ')};
+      }
+      throw errorBody;
+    }
   }
 }
+
+export const api = Api.getInstance();

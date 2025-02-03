@@ -1,22 +1,20 @@
 import {Redirect} from 'expo-router';
 import {View, Text} from 'react-native';
+import {useAuth} from '@providers/AuthProvider';
+import {ActivityIndicator} from 'react-native-paper';
 
 const index = () => {
-  // const {session, loading} = useAuth();
-  const session = false;
+  const {loading, session} = useAuth();
 
-  if (!session) {
-    console.log();
-    
-    return <Redirect href={'/sign-in'} />;
+  if (loading) {
+    return <ActivityIndicator />;
   }
 
-  // return <Redirect href={'/(user)'} />;
-  return (
-    <View>
-      <Text> This is an eror</Text>
-    </View>
-  );
+  if (!session) {
+    return <Redirect href={'/log-in'} />;
+  }
+
+  return <Redirect href={'/(user)'} />;
 };
 
 export default index;

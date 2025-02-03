@@ -10,15 +10,16 @@ import {
 import {Colors} from '@constants/Colors';
 import {useColorScheme} from '@hooks/useColorScheme';
 
-import {Link, Stack} from 'expo-router';
+import {Link, Stack, useRouter} from 'expo-router';
 import {Button, Divider, TextInput} from 'react-native-paper';
-import {useRef, useState} from 'react';
-
-const validUsername = 'user';
-const validPassword = 'secret';
+import {useState} from 'react';
+import {useAuth} from '@providers/AuthProvider';
 
 const LogInScreen = () => {
   const styles = useStyles();
+  const {logIn} = useAuth();
+
+  const router = useRouter();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -26,21 +27,19 @@ const LogInScreen = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const usernameInputRef = useRef<TextInput>(null);
-
-  async function signInWithUsername() {
+  async function logInWithUsername() {
     setLoading(true);
     if (!validateInput()) {
       setLoading(false);
       return;
     }
 
-    // TODO: Sign In with API
-    if (username === validUsername && password === password) {
-      console.log("Signed In");
-      router.push('/');
-    } else {
-      Alert.alert('Usuario o contraseña incorrectos');
+    try {
+      await logIn(username, password);
+      router.replace('/');
+    } catch (error: any) {
+      console.error('Log in error: ', error);
+      Alert.alert(error.message || 'Unknown error occurred.');
     }
 
     setLoading(false);
@@ -64,7 +63,6 @@ const LogInScreen = () => {
     }
     return true;
   };
-
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -102,12 +100,14 @@ const LogInScreen = () => {
           mode="outlined"
         />
 
-        <Text style={{marginTop: 10, color: 'red', fontWeight: '500'}}>{error}</Text>
+        <Text style={{marginTop: 10, color: 'red', fontWeight: '500'}}>
+          {error}
+        </Text>
         <Button
           style={styles.button}
           mode="contained"
           disabled={loading}
-          onPress={signInWithUsername}
+          onPress={logInWithUsername}
           labelStyle={styles.buttonText}
         >
           {loading ? 'Ingresando...' : 'Ingresar'}
