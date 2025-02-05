@@ -11,7 +11,12 @@ import {Colors} from '@constants/Colors';
 import {useColorScheme} from '@hooks/useColorScheme';
 
 import {Link, Stack, useRouter} from 'expo-router';
-import {Button, Divider, TextInput} from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Button,
+  Divider,
+  TextInput,
+} from 'react-native-paper';
 import {useState} from 'react';
 import {useAuth} from '@providers/AuthProvider';
 
@@ -53,11 +58,11 @@ const LogInScreen = () => {
 
   const validateInput = () => {
     setError('');
-    if (!username) {
+    if (!username || username.trim() === '') {
       setError('Se requiere el usuario');
       return false;
     }
-    if (!password) {
+    if (!password || password.trim() === '') {
       setError('Se requiere la constraseña');
       return false;
     }

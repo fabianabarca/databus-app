@@ -101,7 +101,7 @@ export class Api {
       const response = await this.post<
         {token: string},
         {username: string; password: string}
-      >('/login/', {username, password});
+      >('login/', {username, password});
 
       return response;
     } catch (error: any) {

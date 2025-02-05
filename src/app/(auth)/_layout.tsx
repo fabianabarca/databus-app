@@ -1,17 +1,18 @@
 // import {useAuth} from '@providers/AuthProvider';
+import {useAuth} from '@/src/providers/AuthProvider';
 import {Redirect, Stack} from 'expo-router';
-import {ActivityIndicator} from 'react-native';
+import {ActivityIndicator} from 'react-native-paper';
 
 export default function AuthLayout() {
-  // const {session, loading} = useAuth();
+  const {loading, session} = useAuth();
 
-  // if (loading) {
-  //   return <ActivityIndicator />;
-  // }
+  if (loading) {
+    return <ActivityIndicator />;
+  }
 
-  // if (session) {
-  //   return <Redirect href={'/'} />;
-  // }
+  if (session) {
+    return <Redirect href={'/'} />;
+  }
 
   return <Stack />;
 }

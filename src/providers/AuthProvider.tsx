@@ -6,17 +6,12 @@ import {
   useState,
 } from 'react';
 import * as SecureStore from 'expo-secure-store';
-import {Operator} from '@/types';
+import {Operator, User} from '@/types';
 import {api} from '@/api/api-client';
-import {longPressGestureHandlerProps} from 'react-native-gesture-handler/lib/typescript/handlers/LongPressGestureHandler';
-import {logToLogBoxAndConsole} from 'react-native-reanimated/lib/typescript/logger';
-
-const testUserId = '1-1234-5678';
 
 // TODO: Refactor to fetch user info on useEffect, and replace session boolean.
 type AuthData = {
-  user: Operator | null;
-  // token: string | null;
+  user: User | null;
   logIn: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
   loading: boolean;
@@ -25,7 +20,6 @@ type AuthData = {
 
 const AuthContext = createContext<AuthData>({
   user: null,
-  // token: null,
   logIn: async () => {},
   logOut: async () => {},
   loading: true,
@@ -33,51 +27,55 @@ const AuthContext = createContext<AuthData>({
 });
 
 export default function AuthProvider({children}: PropsWithChildren) {
-  const [user, setUser] = useState<any | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  // const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState(true);
+  const [session, setSession] = useState(false);
 
   // Load stored token and user data
   useEffect(() => {
     const loadSession = async () => {
       setLoading(true);
-      // const storedToken = await SecureStore.getItemAsync('authToken');
-      const storedUser = await SecureStore.getItemAsync('userId');
-      if (storedUser) {
-        // setToken(storedToken);
-        setUserId(userId);
-        // Fetch user details if needed
-        setLoading(false);
+      const storedUser = await SecureStore.getItemAsync('user');
+      const token = await SecureStore.getItemAsync('authToken');
+      if (
+        token &&
+        token !== 'null' &&
+        storedUser &&
+        storedUser !== 'null' &&
+        !user
+      ) {
+        const parsedUser: User = JSON.parse(storedUser as string) as User;
+        if (parsedUser) {
+          setUser(() => {
+            const newUser = parsedUser;
+            setSession(newUser !== null);
+            setLoading(false);
+            return newUser;
+          });
+        }
       }
-      // TODO: remove when the userId is sorted out propperly
-      setLoading(false);
     };
     loadSession();
   }, []);
 
   // Sign in function
   const logIn = async (username: string, password: string) => {
-    let response: {token: string} = {token: ''};
     try {
-      response = await api.logIn(username, password);
-      console.log('Response: ', response);
-
-      // const {token, user_id} = response;
-      const {token} = response;
-      setSession(true);
-
-      // setUser(user);
+      const response = await api.logIn(username, password);
+      const {first_name, last_name, operator_id, token} = response;
 
       // Store in SecureStore
       await SecureStore.setItemAsync('authToken', token);
-      await SecureStore.setItemAsync('userId', testUserId);
+      await SecureStore.setItemAsync(
+        'user',
+        JSON.stringify({first_name, last_name, operator_id}),
+      );
 
-
-      const test = await api.get<any>(`operator/${testUserId}/`);
       // Set in state
-      // setUserId(user_id);
+      setUser({first_name, last_name, operator_id});
+      // console.log('User: ', user);
+
+      setSession(true);
     } catch (error: any) {
       throw error;
     }
@@ -87,10 +85,11 @@ export default function AuthProvider({children}: PropsWithChildren) {
   const logOut = async () => {
     // Remove from SecureStore
     await SecureStore.deleteItemAsync('authToken');
-    await SecureStore.deleteItemAsync('userId');
+    await SecureStore.deleteItemAsync('user');
 
     // Clear state
-    setUserId(null);
+    setUser(null);
+    setSession(false);
   };
 
   return (

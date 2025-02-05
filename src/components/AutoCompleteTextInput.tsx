@@ -1,6 +1,8 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {View, FlatList, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import {TextInput} from 'react-native-paper';
+
+import {MaterialIcons} from '@expo/vector-icons';
 
 const AutocompleteTextInput = ({
   label,
@@ -11,10 +13,10 @@ const AutocompleteTextInput = ({
 }) => {
   const [text, setText] = useState('');
   const [filteredData, setFilteredData] = useState<string[]>([]);
+  const [isFocused, setIsFocused] = useState(false);
+  const textInputRef = useRef(null);
 
   const styles = useStyles();
-
-  // Sample suggestions for autocomplete
 
   // Handle change in input text
   const handleTextChange = (input: string) => {
@@ -29,12 +31,25 @@ const AutocompleteTextInput = ({
     }
   };
 
-  const handleTextPress = () => {
+  const handleFocus = () => {
     setFilteredData(suggestions);
+    setIsFocused(true);
   };
 
   const handleBLur = () => {
     setFilteredData([]);
+    setIsFocused(false);
+  };
+
+  const toggleFocus = () => {
+    if (!textInputRef.current) {
+      return;
+    }
+    if (isFocused) {
+      textInputRef.current.blur(); // Remove focus
+    } else {
+      textInputRef.current.focus(); // Set focus
+    }
   };
 
   // Handle selection of an autocomplete suggestion
@@ -46,10 +61,24 @@ const AutocompleteTextInput = ({
   return (
     <View style={styles.container}>
       <TextInput
+        ref={textInputRef}
         label={label}
         value={text}
         onChangeText={handleTextChange}
-        onPress={handleTextPress}
+        left={<TextInput.Icon icon="magnify" />}
+        right={
+          <TextInput.Icon
+            icon={() => (
+              <MaterialIcons
+                name="arrow-drop-down"
+                size={24}
+                style={{transform: [{rotate: isFocused ? '0deg' : '270deg'}]}}
+              />
+            )}
+            onPress={toggleFocus}
+          />
+        } // Right icon (arrow-drop-down)
+        onFocus={handleFocus}
         onBlur={handleBLur}
         mode="outlined"
         style={styles.input}

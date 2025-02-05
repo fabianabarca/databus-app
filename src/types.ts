@@ -105,11 +105,19 @@ export type Occupancy = {
 };
 
 export type Operator = {
-  operator_id: string;
-  name: string;
-  email?: string;
-  phone?: string;
+  agencies: number[];
+  phone: string;
+  photo: string | null;
+  url: string;
+  user: number;
+  vehicle: string | null;
 };
+
+export type User = {
+  operator_id: string;
+  first_name: string;
+  last_name: string;
+}
 
 export type Position = {
   journey_id: number;
