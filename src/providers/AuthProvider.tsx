@@ -12,6 +12,7 @@ import {api} from '@/api/api-client';
 // TODO: Refactor to fetch user info on useEffect, and replace session boolean.
 type AuthData = {
   user: User | null;
+  operator: Operator | null;
   logIn: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
   loading: boolean;
@@ -20,6 +21,7 @@ type AuthData = {
 
 const AuthContext = createContext<AuthData>({
   user: null,
+  operator: null,
   logIn: async () => {},
   logOut: async () => {},
   loading: true,
@@ -28,6 +30,7 @@ const AuthContext = createContext<AuthData>({
 
 export default function AuthProvider({children}: PropsWithChildren) {
   const [user, setUser] = useState<User | null>(null);
+  const [operator, setOperator] = useState<Operator | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(false);
 
@@ -46,6 +49,12 @@ export default function AuthProvider({children}: PropsWithChildren) {
       ) {
         const parsedUser: User = JSON.parse(storedUser as string) as User;
         if (parsedUser) {
+          if (!operator) {
+            const newOperator = await api.get<Operator>(
+              `operator/${parsedUser.operator_id}/`,
+            );
+            setOperator(newOperator ?? null);
+          }
           setUser(() => {
             const newUser = parsedUser;
             setSession(newUser !== null);
@@ -93,7 +102,9 @@ export default function AuthProvider({children}: PropsWithChildren) {
   };
 
   return (
-    <AuthContext.Provider value={{user, logIn, logOut, loading, session}}>
+    <AuthContext.Provider
+      value={{user, operator, logIn, logOut, loading, session}}
+    >
       {children}
     </AuthContext.Provider>
   );

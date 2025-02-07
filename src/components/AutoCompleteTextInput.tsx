@@ -1,44 +1,123 @@
 import React, {useRef, useState} from 'react';
-import {View, FlatList, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import {TextInput} from 'react-native-paper';
+import {
+  // Platform,
+  // KeyboardAvoidingView,
+  View,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Keyboard,
+} from 'react-native';
+import {HelperText, TextInput} from 'react-native-paper';
 
 import {MaterialIcons} from '@expo/vector-icons';
+import {Colors} from '@constants/Colors';
+
+import {useColorScheme} from '@hooks/useColorScheme';
 
 const AutocompleteTextInput = ({
   label,
   suggestions,
+  disabled = false,
+  onChangeText,
+  onErrorChange,
 }: {
   label: string;
   suggestions: string[];
+  disabled?: boolean;
+  onChangeText?: (text: string) => void;
+  onErrorChange?: (hasError: boolean) => void;
 }) => {
   const [text, setText] = useState('');
   const [filteredData, setFilteredData] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isInteractingWithList, setIsInteractingWithList] = useState(false);
   const textInputRef = useRef(null);
 
+  const colorScheme = useColorScheme() as 'light' | 'dark';
   const styles = useStyles();
 
-  // Handle change in input text
   const handleTextChange = (input: string) => {
     setText(input);
+    if (onChangeText) {
+      onChangeText(input);
+    }
+
+    // Validate the input
+    let isValid = true;
+
+    // Filter suggestions based on input
     if (input) {
       const filteredSuggestions = suggestions.filter((item: string) =>
         item.toLowerCase().includes(input.toLowerCase()),
       );
       setFilteredData(filteredSuggestions);
+      isValid = filteredSuggestions.length > 0;
     } else {
       setFilteredData(suggestions);
     }
+
+    const errorMessage: string | null = isValid
+      ? null
+      : 'Entrada inválida. Por favor, seleccione una opción válida.';
+
+    setError(errorMessage);
+
+    if (!isValid && onChangeText) {
+      onChangeText(input);
+    }
+    // Notify the parent about the error state
+    if (onErrorChange) {
+      onErrorChange(!isValid);
+    }
+
+    // Filter suggestions
+    setFilteredData(
+      input
+        ? suggestions.filter(item =>
+            item.toLowerCase().includes(input.toLowerCase()),
+          )
+        : suggestions,
+    );
   };
 
   const handleFocus = () => {
-    setFilteredData(suggestions);
+    if ((text && !error) || text.trim() == '') setFilteredData(suggestions);
     setIsFocused(true);
   };
 
   const handleBLur = () => {
+    console.log('Is interacting with list: ?', isInteractingWithList);
+    if (!isInteractingWithList) {
+      setFilteredData([]);
+      if (!suggestions.includes(text)) {
+        setError('Entrada inválida. Por favor, seleccione una opción válida.');
+      }
+      setIsFocused(false);
+    }
+  };
+
+  // Handle selection of an autocomplete suggestion
+  const handleSuggestionSelect = (suggestion: string) => {
+    setText(suggestion);
+    if (onChangeText) {
+      onChangeText(suggestion);
+    }
+    setError(null);
     setFilteredData([]);
-    setIsFocused(false);
+  };
+
+  const handleScroll = () => {
+    setIsInteractingWithList(true);
+    Keyboard.dismiss();
+    console.log('Set timmer for interacting with list');
+
+    setIsInteractingWithList(() => {
+      setTimeout(() => setIsInteractingWithList(false), 100);
+      return true;
+    });
   };
 
   const toggleFocus = () => {
@@ -46,16 +125,10 @@ const AutocompleteTextInput = ({
       return;
     }
     if (isFocused) {
-      textInputRef.current.blur(); // Remove focus
+      handleBLur();
     } else {
-      textInputRef.current.focus(); // Set focus
+      handleFocus();
     }
-  };
-
-  // Handle selection of an autocomplete suggestion
-  const handleSuggestionSelect = (suggestion: string) => {
-    setText(suggestion);
-    setFilteredData([]);
   };
 
   return (
@@ -63,7 +136,9 @@ const AutocompleteTextInput = ({
       <TextInput
         ref={textInputRef}
         label={label}
+        placeholder={label}
         value={text}
+        disabled={disabled}
         onChangeText={handleTextChange}
         left={<TextInput.Icon icon="magnify" />}
         right={
@@ -72,26 +147,37 @@ const AutocompleteTextInput = ({
               <MaterialIcons
                 name="arrow-drop-down"
                 size={24}
-                style={{transform: [{rotate: isFocused ? '0deg' : '270deg'}]}}
+                style={{
+                  transform: [{rotate: isFocused ? '0deg' : '270deg'}],
+                }}
+                color={!disabled ? Colors[colorScheme].text : '#8C8C98'}
               />
             )}
             onPress={toggleFocus}
+            disabled={disabled}
           />
-        } // Right icon (arrow-drop-down)
+        }
         onFocus={handleFocus}
         onBlur={handleBLur}
         mode="outlined"
+        textColor={Colors[colorScheme].text}
         style={styles.input}
+        error={!!error}
       />
+      {error && <HelperText type="error">{error}</HelperText>}
 
-      {/* Display filtered suggestions */}
       {filteredData.length > 0 && (
         <FlatList
+          keyboardShouldPersistTaps="handled"
+          onScrollBeginDrag={handleScroll}
           style={styles.suggestionList}
           data={filteredData}
           keyExtractor={(item: string) => item}
           renderItem={({item}: {item: string}) => (
-            <TouchableOpacity onPress={() => handleSuggestionSelect(item)}>
+            <TouchableOpacity
+              activeOpacity={0.1}
+              onPress={() => handleSuggestionSelect(item)}
+            >
               <View style={styles.suggestionItem}>
                 <Text>{item}</Text>
               </View>
@@ -107,9 +193,13 @@ const useStyles = () => {
   return StyleSheet.create({
     container: {
       width: '100%',
+      minWidth: 60,
+      minHeight: 60,
     },
     input: {
       marginBottom: 0,
+      height: 60,
+      minHeight: 60,
     },
     suggestionItem: {
       padding: 10,
@@ -118,7 +208,7 @@ const useStyles = () => {
       backgroundColor: '#CDDEEB',
       borderRadius: 4,
       position: 'absolute',
-      top: 56,
+      top: 68,
       left: 0,
       right: 0,
       zIndex: 1,

@@ -3,24 +3,27 @@ import {
   StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
+  useColorScheme,
   View,
 } from 'react-native';
 import {HomeStyles as S} from '@/styles/home';
+import AccordionList from '@components/AccordionList';
 import Header from '@/components/Header';
 import {StatusBar} from 'expo-status-bar';
-import {List, Text} from 'react-native-paper';
+import {ActivityIndicator, List, Text} from 'react-native-paper';
 import {MaterialCommunityIcons, MaterialIcons} from '@expo/vector-icons';
 import {Button} from 'react-native-paper';
 
 import {useAuth} from '@/providers/AuthProvider';
 import {Colors} from '@constants/Colors';
-import {useState} from 'react';
+import React, {useState} from 'react';
 
 import AutocompleteTextInput from '@components/AutoCompleteTextInput';
-import {RadioButtonContext} from 'react-native-paper/lib/typescript/components/RadioButton/RadioButtonGroup';
+
+import {useProfileStyles} from '@styles/profile';
 
 const ProfileDataField = ({label, value}: {label: string; value: string}) => {
-  const styles = useStyles();
+  const styles = useProfileStyles();
   return (
     <View style={styles.profileDataFieldContainer}>
       <Text style={styles.dataFieldLabel}>{label}</Text>
@@ -36,7 +39,7 @@ const UserPictureComponent = ({
   name: string;
   picture: string;
 }) => {
-  const styles = useStyles();
+  const styles = useProfileStyles();
   return (
     <View style={styles.profileContainer}>
       <View style={styles.profilePictureContainer}>
@@ -53,45 +56,55 @@ const UserPictureComponent = ({
   );
 };
 
-const AccordionWithArrow = () => {
-  const [expanded, setExpanded] = useState(false);
-
-  const styles = useStyles();
-  return (
-    <List.Accordion
-      title="Agencia"
-      left={props => <List.Icon {...props} icon="" />}
-      right={props => (
-        <MaterialIcons
-          name="arrow-drop-down"
-          size={24}
-          color="black"
-          style={{transform: [{rotate: expanded ? '0deg' : '270deg'}]}}
-        />
-      )}
-      expanded={expanded}
-      onPress={() => setExpanded(!expanded)}
-      style={styles.list}
-    >
-      <List.Item title="First item" />
-      <List.Item title="Second item" />
-    </List.Accordion>
-  );
-};
+const agencies = [
+  {label: 'bUCR', value: 1},
+  {label: 'TSG', value: 2},
+  {label: 'Transtusa', value: 3},
+];
+const vehicles = ['SJB1234', 'SJB5678'];
 
 const ProfileScreen = () => {
-  const {user, logOut} = useAuth();
-  const styles = useStyles();
+  const [agency, setAgency] = useState<number | null>();
+  const [vehicle, setVehicle] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+
+  const {user, operator, logOut} = useAuth();
+  const styles = useProfileStyles();
 
   const name = `${user?.first_name} ${user?.last_name}`;
 
+  if (!user || !operator) {
+    return <ActivityIndicator />;
+  }
+
+  //  TODO: Changes in user.
   const handleConfirmChanges = () => {
-    console.log('Changes in user');
+    if (agency && vehicle && vehicle.trim() !== '' && !error) {
+      console.log('Changes in user');
+    } else {
+      console.log('There are no changes');
+    }
   };
+
+  const handleSelectAgency = (value: number) => {
+    setAgency(value);
+  };
+
+  const handleSelectVehicle = (text: string) => {
+    console.log('Vehicle changed: ', text);
+
+    setVehicle(text);
+  };
+
+  const handleErrorChange = (hasError: boolean) => {
+    setError(hasError);
+  };
+
+  console.log(`Agency: ${agency} | Vehicle: ${vehicle} | Error: ${error}`);
 
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <View style={S.container}>
+      <View style={styles.container}>
         <StatusBar style="light" />
         <Header pageTitle="Perfil" variant="3" />
         <View style={styles.square} />
@@ -101,20 +114,29 @@ const ProfileScreen = () => {
         <View style={styles.contentContainer}>
           <View style={styles.profileDataContainer}>
             <ProfileDataField label="Cédula" value={user?.operator_id} />
-            <ProfileDataField label="Teléfono" value={user?.operator_id} />
+            <ProfileDataField label="Teléfono" value={operator?.phone} />
           </View>
 
+          {/* TODO: changed agencies, and vehicles for actual values from API */}
           <View style={styles.inputContainer}>
-            <AccordionWithArrow />
+            <AccordionList
+              items={agencies}
+              defaultLabel="Agencia"
+              onSelect={handleSelectAgency}
+            />
             <AutocompleteTextInput
               label="Vehículo"
-              suggestions={['UCR-123', 'UCR-321']}
+              suggestions={vehicles}
+              disabled={!agency}
+              onChangeText={handleSelectVehicle}
+              onErrorChange={handleErrorChange}
             />
           </View>
 
           <TouchableOpacity
             style={styles.buttonConfirmChanges}
             onPress={handleConfirmChanges}
+            disabled={error || (vehicle !== null && vehicle.trim() === '')}
           >
             <Text style={styles.buttonText}>Confirmar Cambios</Text>
           </TouchableOpacity>
@@ -129,112 +151,3 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
-
-const useStyles = () => {
-  return StyleSheet.create({
-    contentContainer: {
-      width: '100%',
-      height: '100%',
-      borderTopRightRadius: 24,
-      paddingTop: 125,
-      backgroundColor: Colors.light.background,
-      alignItems: 'center',
-    },
-    profileDataContainer: {
-      justifyContent: 'space-between',
-      flexDirection: 'row',
-      paddingHorizontal: 30,
-      width: '100%',
-      height: 50,
-    },
-    profileDataFieldContainer: {
-      height: '100%',
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '30%',
-    },
-    square: {
-      position: 'absolute',
-      right: 0,
-      top: '15%',
-      width: 100,
-      height: 100,
-      backgroundColor: Colors.primaryColor,
-      zIndex: 0,
-    },
-    profileContainer: {
-      position: 'absolute',
-      // right: 0,
-      top: 0,
-      marginTop: 85,
-      width: 200,
-      height: 170,
-      marginHorizontal: 'auto',
-      borderRadius: 0,
-      zIndex: 5,
-      // backgroundColor: 'red',
-      alignContent: 'center',
-      // justifyContent: 'center',
-    },
-    profilePictureContainer: {
-      width: 150,
-      height: undefined,
-      aspectRatio: 1,
-      borderRadius: 100,
-      backgroundColor: Colors.notFocusColor,
-      alignSelf: 'center',
-    },
-    nameText: {
-      fontFamily: 'Roboto',
-      fontWeight: 'bold',
-      fontSize: 20,
-    },
-    nameRow: {
-      // flexDirection: 'row',
-      // justifyContent: 'space-between',
-      marginTop: 10,
-      width: 200,
-      // backgroundColor: 'yellow',
-    },
-    dataFieldLabel: {
-      color: Colors.primaryColor,
-      fontWeight: 'bold',
-      fontSize: 15,
-    },
-    dataFieldValue: {
-      fontSize: 15,
-    },
-    buttonConfirmChanges: {
-      width: 200,
-      height: 56,
-      borderRadius: 100,
-      backgroundColor: Colors.secondaryColor,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: 30,
-    },
-    buttonLogOut: {
-      width: 380,
-      height: 56,
-      borderRadius: 100,
-      marginTop: 'auto',
-      marginBottom: 150,
-      backgroundColor: Colors.primaryColor,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    buttonText: {
-      fontWeight: 'bold',
-      fontSize: 16,
-      color: 'white',
-    },
-    inputContainer: {
-      width: '90%',
-      marginTop: 50,
-    },
-    list: {
-      borderBottomWidth: 1,
-      borderColor: 'grey',
-    },
-  });
-};
