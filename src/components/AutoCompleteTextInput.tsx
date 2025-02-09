@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   // Platform,
   // KeyboardAvoidingView,
@@ -20,12 +20,14 @@ const AutocompleteTextInput = ({
   label,
   suggestions,
   disabled = false,
+  value,
   onChangeText,
   onErrorChange,
 }: {
   label: string;
   suggestions: string[];
   disabled?: boolean;
+  value?: string;
   onChangeText?: (text: string) => void;
   onErrorChange?: (hasError: boolean) => void;
 }) => {
@@ -39,7 +41,15 @@ const AutocompleteTextInput = ({
   const colorScheme = useColorScheme() as 'light' | 'dark';
   const styles = useStyles();
 
+  useEffect(() => {
+    if (value && value.trim() !== '') {
+      console.log();
+
+      setText(value);
+    }
+  }, [value]);
   const handleTextChange = (input: string) => {
+    setIsFocused(true);
     setText(input);
     if (onChangeText) {
       onChangeText(input);
@@ -89,7 +99,6 @@ const AutocompleteTextInput = ({
   };
 
   const handleBLur = () => {
-    console.log('Is interacting with list: ?', isInteractingWithList);
     if (!isInteractingWithList) {
       setFilteredData([]);
       if (!suggestions.includes(text)) {
@@ -101,6 +110,7 @@ const AutocompleteTextInput = ({
 
   // Handle selection of an autocomplete suggestion
   const handleSuggestionSelect = (suggestion: string) => {
+    setIsFocused(false);
     setText(suggestion);
     if (onChangeText) {
       onChangeText(suggestion);
@@ -112,7 +122,6 @@ const AutocompleteTextInput = ({
   const handleScroll = () => {
     setIsInteractingWithList(true);
     Keyboard.dismiss();
-    console.log('Set timmer for interacting with list');
 
     setIsInteractingWithList(() => {
       setTimeout(() => setIsInteractingWithList(false), 100);

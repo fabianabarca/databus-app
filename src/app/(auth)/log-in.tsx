@@ -7,21 +7,23 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import {Colors} from '@constants/Colors';
-import {useColorScheme} from '@hooks/useColorScheme';
 
 import {Link, Stack, useRouter} from 'expo-router';
 import {
   ActivityIndicator,
   Button,
   Divider,
+  HelperText,
   TextInput,
 } from 'react-native-paper';
 import {useState} from 'react';
 import {useAuth} from '@providers/AuthProvider';
+import {useLogInStyles} from '@styles/log-in';
+import {Colors} from '@constants/Colors';
+import {useColorScheme} from '@hooks/useColorScheme';
 
 const LogInScreen = () => {
-  const styles = useStyles();
+  const styles = useLogInStyles();
   const {logIn} = useAuth();
 
   const router = useRouter();
@@ -29,8 +31,11 @@ const LogInScreen = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [error, setError] = useState('');
+  const [userError, setUserError] = useState<string | null>('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const colorScheme = useColorScheme() as 'light' | 'dark';
 
   async function logInWithUsername() {
     setLoading(true);
@@ -57,15 +62,19 @@ const LogInScreen = () => {
   };
 
   const validateInput = () => {
-    setError('');
+    setUserError(null);
+    setPasswordError(null);
+
+    let error = false;
     if (!username || username.trim() === '') {
-      setError('Se requiere el usuario');
-      return false;
+      setUserError('Se requiere el usuario');
+      error = true;
     }
     if (!password || password.trim() === '') {
-      setError('Se requiere la constraseña');
-      return false;
+      setPasswordError('Se requiere la constraseña');
+      error = true;
     }
+    if (error) return false;
     return true;
   };
 
@@ -80,34 +89,55 @@ const LogInScreen = () => {
         />
 
         <Text style={styles.text}>Ingrese a la cuenta de conductor</Text>
-        <TextInput
-          label="Usuario"
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-          mode="outlined"
-        />
-        <TextInput
-          secureTextEntry={!isPasswordVisible}
-          label="Contraseña"
-          value={password}
-          right={
-            <TextInput.Icon
-              icon={isPasswordVisible ? 'eye-off' : 'eye'}
-              onPress={() => {
-                setIsPasswordVisible(!isPasswordVisible);
-              }}
-              style={styles.inputIcon}
-            />
-          }
-          onChangeText={setPassword}
-          style={styles.input}
-          mode="outlined"
-        />
+        <View style={styles.textInputContainer}>
+          <TextInput
+            label="Usuario"
+            value={username}
+            onChangeText={text => {
+              setUserError(null);
+              setUsername(text);
+            }}
+            style={styles.input}
+            mode="outlined"
+            error={!!userError}
+            textColor={Colors[colorScheme].text}
+          />
+          {userError && (
+            <HelperText type="error" style={styles.error}>
+              {userError}
+            </HelperText>
+          )}
+        </View>
 
-        <Text style={{marginTop: 10, color: 'red', fontWeight: '500'}}>
-          {error}
-        </Text>
+        <View style={styles.textInputContainer}>
+          <TextInput
+            secureTextEntry={!isPasswordVisible}
+            label="Contraseña"
+            value={password}
+            right={
+              <TextInput.Icon
+                icon={isPasswordVisible ? 'eye-off' : 'eye'}
+                onPress={() => {
+                  setIsPasswordVisible(!isPasswordVisible);
+                }}
+              />
+            }
+            onChangeText={text => {
+              setPasswordError(null);
+              setPassword(text);
+            }}
+            style={styles.input}
+            mode="outlined"
+            error={!!passwordError}
+            textColor={Colors[colorScheme].text}
+          />
+          {passwordError && (
+            <HelperText type="error" style={styles.error}>
+              {passwordError}
+            </HelperText>
+          )}
+        </View>
+
         <Button
           style={styles.button}
           mode="contained"
@@ -134,72 +164,3 @@ const LogInScreen = () => {
 };
 
 export default LogInScreen;
-
-const useStyles = () => {
-  const colorScheme = useColorScheme() as 'light' | 'dark';
-
-  return StyleSheet.create({
-    backgroundContainer: {
-      flex: 1,
-      backgroundColor: Colors[colorScheme].primaryColor,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    logo: {
-      // marginTop: 40,
-      marginBottom: 100,
-      width: 249,
-      height: 64,
-    },
-    text: {
-      color: 'white',
-      fontWeight: 'bold',
-      fontSize: 20,
-    },
-    dividerContainer: {
-      width: 348,
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginVertical: 20,
-    },
-    input: {
-      width: 348,
-      height: 56,
-      padding: 8,
-      backgroundColor: Colors[colorScheme].background,
-      borderRadius: 10,
-      marginTop: 10,
-    },
-    inputIcon: {
-      marginTop: 20,
-    },
-    button: {
-      width: 348,
-      height: 56,
-      marginTop: 10,
-      backgroundColor: '#6DC067',
-      borderRadius: 6,
-      justifyContent: 'center',
-    },
-    buttonText: {
-      color: 'white',
-      fontWeight: 'bold',
-      fontSize: 16,
-    },
-    divider: {
-      flex: 1,
-      height: 0.5,
-      backgroundColor: 'white',
-    },
-    dividerText: {
-      marginHorizontal: 10,
-      color: 'white',
-    },
-    linkText: {
-      color: 'white',
-      fontSize: 16,
-      fontWeight: 'bold',
-      textDecorationLine: 'underline',
-    },
-  });
-};

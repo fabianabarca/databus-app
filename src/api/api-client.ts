@@ -1,28 +1,46 @@
 import {Config} from '@/api/api-config';
 import * as SecureStore from 'expo-secure-store';
-import {lightGreen100} from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 export class Api {
   private static _instance: Api | null = null;
+  private authToken: string | null = null;
 
   private constructor() {}
 
   public static getInstance(): Api {
     if (!Api._instance) {
       Api._instance = new Api();
+      Api._instance.loadToken();
     }
     return Api._instance;
   }
 
+  public async loadToken(): Promise<string | null> {
+    const token = await SecureStore.getItemAsync('authToken');
+    if (!this.authToken) {
+      this.authToken = token;
+    }
+    return token;
+  }
+
+  public async setAuthToken(token: string) {
+    this.authToken = token;
+    await SecureStore.setItemAsync('authToken', token);
+  }
+
+  public async clearAuthToken() {
+    this.authToken = null;
+    await SecureStore.deleteItemAsync('authToken');
+  }
+
   private async getAuthHeaders() {
-    const apiToken = await SecureStore.getItemAsync('authToken');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };
 
-    if (apiToken) {
-      headers['Authorization'] = `Bearer ${apiToken}`;
+    if (this.authToken) {
+      headers['Authorization'] = `Bearer ${this.authToken}`;
     }
 
     return headers;
@@ -30,15 +48,12 @@ export class Api {
 
   public async request<T>(endpoint: string, options: RequestInit): Promise<T> {
     const baseUrl = Config.getBaseUrl();
-
     const headers = {
       ...(await this.getAuthHeaders()),
       ...options.headers,
     };
 
-    // console.log('Endpoint: ', `${baseUrl}${endpoint}`);
-    // console.log('Options: ', options);
-    // console.log(headers);
+    // console.log('Headers: ', headers, ' | Endpoint: ', endpoint);
 
     try {
       const response = await fetch(`${baseUrl}${endpoint}`, {
@@ -46,23 +61,19 @@ export class Api {
         headers,
       });
 
-      const contentType = response.headers.get('content-type');
-
       if (!response.ok) {
         let errorBody: any = {message: `HTTP Error: ${response.status}`};
+        const contentType = response.headers.get('content-type');
 
         if (contentType?.includes('application/json')) {
           errorBody = await response.json();
         } else {
-          const errorText = await response.text();
-          console.error('Server Error Page:', errorText);
-          errorBody = {
-            message: `Server error occurred. Please try again later.`,
-          };
+          errorBody = {message: `Server error occurred.`};
         }
 
         throw errorBody;
       }
+
       return response.json() as Promise<T>;
     } catch (error: any) {
       console.error('API Request Error:', error);
@@ -75,7 +86,6 @@ export class Api {
     params: Record<string, string> = {},
   ): Promise<T> {
     const query = new URLSearchParams(params).toString();
-
     return this.request<T>(`${endpoint}?${query}`, {method: 'GET'});
   }
 
@@ -103,14 +113,12 @@ export class Api {
         {username: string; password: string}
       >('login/', {username, password});
 
+      await this.setAuthToken(response.token);
       return response;
     } catch (error: any) {
       let errorBody: any = {
-        message: error.message || 'Unknown error occurred.',
+        message: error.error || 'Unknown error occurred.',
       };
-      if (error?.non_field_errors) {
-        errorBody = {message: error.non_field_errors.join(' ')};
-      }
       throw errorBody;
     }
   }

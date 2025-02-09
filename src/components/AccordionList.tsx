@@ -1,42 +1,45 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, useColorScheme, View} from 'react-native';
 
 import {List} from 'react-native-paper';
 import {MaterialIcons} from '@expo/vector-icons';
 
 import {Colors} from '@constants/Colors';
+import {Item} from '@/types';
 
-type Item = {
-  label: string;
-  value: number;
-};
-
-type AccordionListProps = {
-  items: Item[];
+type AccordionListProps<T> = {
+  items: Item<T>[];
   defaultLabel?: string;
-  onSelect?: (value: number) => void;
+  selectedItem?: T;
+  onSelect?: (item: Item<T>) => void;
 };
 
-const AccordionList: React.FC<AccordionListProps> = ({
+const AccordionList = <T,>({
   items,
   defaultLabel = 'Select value',
+  selectedItem,
   onSelect,
-}: {
-  items: {label: string; value: number}[];
-  defaultLabel?: string;
-  onSelect?: (value: number) => void;
-}) => {
+}: AccordionListProps<T>) => {
   const [expanded, setExpanded] = useState(false);
-  const [selectedLabel, setSelectedLabel] = useState(
-    defaultLabel ?? 'Select Item',
+  const [selectedLabel, setSelectedLabel] = useState<string>(
+    selectedItem
+      ? items.find(item => item.value === selectedItem)?.label ?? defaultLabel
+      : defaultLabel,
   );
   const theme = useColorScheme() as 'light' | 'dark';
   const styles = useStyles(theme);
 
-  const handleItemPress = (item: Item) => {
+  useEffect(() => {
+    if (selectedItem) {
+      const foundItem = items.find(item => item.value === selectedItem);
+      setSelectedLabel(foundItem ? foundItem.label : defaultLabel);
+    }
+  }, [selectedItem]);
+
+  const handleItemPress = (item: Item<T>) => {
     setSelectedLabel(item.label);
     if (onSelect) {
-      onSelect(item.value);
+      onSelect(item);
     }
     setExpanded(false);
   };
@@ -45,7 +48,7 @@ const AccordionList: React.FC<AccordionListProps> = ({
     <List.Accordion
       title={selectedLabel}
       left={props => <List.Icon {...props} icon="" />}
-      right={props => (
+      right={() => (
         <MaterialIcons
           name="arrow-drop-down"
           size={24}

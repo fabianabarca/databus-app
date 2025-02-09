@@ -1,5 +1,5 @@
 import {View, Image, TouchableOpacity} from 'react-native';
-import {HomeStyles as S} from '@/styles/home';
+import {useHomeStyles} from '@/styles/home';
 import Header from '@/components/Header';
 import {StatusBar} from 'expo-status-bar';
 import {Text, Icon} from 'react-native-paper';
@@ -10,14 +10,16 @@ import {useAuth} from '@/providers/AuthProvider';
 
 const HomeScreen = () => {
   const {user} = useAuth();
+  const styles = useHomeStyles();
+
   return (
-    <View style={S.container}>
+    <View style={styles.container}>
       <StatusBar style="light" />
       <Header driverName={user?.first_name as string} variant="1" />
 
-      <View style={S.content}>
+      <View style={styles.content}>
         <Image source={require('@assets/images/busAzul.png')} />
-        <Text style={S.description}>
+        <Text style={styles.description}>
           Servicio de buses de la Universidad de Costa Rica
         </Text>
 
@@ -25,8 +27,8 @@ const HomeScreen = () => {
       </View>
 
       <Link href="/configuration" asChild>
-        <TouchableOpacity style={S.button}>
-          <Text style={S.buttonText}>Configurar nuevo viaje</Text>
+        <TouchableOpacity style={styles.button}>
+          <Text style={styles.buttonText}>Configurar nuevo viaje</Text>
           <Icon size={20} source="cog" color="#FAFAFA" />
         </TouchableOpacity>
       </Link>

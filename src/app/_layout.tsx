@@ -10,6 +10,7 @@ import {PaperProvider, DefaultTheme, configureFonts} from 'react-native-paper';
 import {StatusBar} from 'expo-status-bar';
 import {Colors} from '@constants/Colors';
 import AuthProvider from '../providers/AuthProvider';
+import AppDataProvider from '../providers/AppDataProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -61,21 +62,23 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <PaperProvider theme={theme}>
         <AuthProvider>
-          <Stack
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: '#005DA4',
-              },
-              headerTintColor: '#fff',
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name="(auth)" options={{headerShown: false}} />
-            <Stack.Screen name="(user)" options={{headerShown: false}} />
-          </Stack>
+          <AppDataProvider>
+            <Stack
+              screenOptions={{
+                headerStyle: {
+                  backgroundColor: '#005DA4',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+                headerShown: false,
+              }}
+            >
+              <Stack.Screen name="(auth)" options={{headerShown: false}} />
+              <Stack.Screen name="(user)" options={{headerShown: false}} />
+            </Stack>
+          </AppDataProvider>
         </AuthProvider>
       </PaperProvider>
     </ThemeProvider>

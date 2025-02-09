@@ -8,13 +8,14 @@ import {
 import * as SecureStore from 'expo-secure-store';
 import {Operator, User} from '@/types';
 import {api} from '@/api/api-client';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // TODO: Refactor to fetch user info on useEffect, and replace session boolean.
 type AuthData = {
   user: User | null;
   operator: Operator | null;
   logIn: (email: string, password: string) => Promise<void>;
-  logOut: () => Promise<void>;
+  logOut: (resetAppData: () => Promise<void>) => Promise<void>;
   loading: boolean;
   session: boolean;
 };
@@ -38,31 +39,26 @@ export default function AuthProvider({children}: PropsWithChildren) {
   useEffect(() => {
     const loadSession = async () => {
       setLoading(true);
-      const storedUser = await SecureStore.getItemAsync('user');
-      const token = await SecureStore.getItemAsync('authToken');
-      if (
-        token &&
-        token !== 'null' &&
-        storedUser &&
-        storedUser !== 'null' &&
-        !user
-      ) {
-        const parsedUser: User = JSON.parse(storedUser as string) as User;
-        if (parsedUser) {
-          if (!operator) {
-            const newOperator = await api.get<Operator>(
-              `operator/${parsedUser.operator_id}/`,
-            );
-            setOperator(newOperator ?? null);
-          }
-          setUser(() => {
-            const newUser = parsedUser;
-            setSession(newUser !== null);
-            setLoading(false);
-            return newUser;
-          });
+
+      const {token, operator_id, first_name, last_name} =
+        await loadSessionFromStorage();
+
+      if (token && token !== 'null' && operator_id && operator_id !== 'null') {
+        setUser({
+          first_name: first_name ?? '',
+          last_name: last_name ?? '',
+          operator_id,
+        });
+        setSession(true);
+
+        if (!operator) {
+          const newOperator = await api.get<Operator>(
+            `operator/${operator_id}/`,
+          );
+          setOperator(newOperator ?? null);
         }
       }
+      setLoading(false);
     };
     loadSession();
   }, []);
@@ -74,16 +70,20 @@ export default function AuthProvider({children}: PropsWithChildren) {
       const {first_name, last_name, operator_id, token} = response;
 
       // Store in SecureStore
-      await SecureStore.setItemAsync('authToken', token);
-      await SecureStore.setItemAsync(
-        'user',
-        JSON.stringify({first_name, last_name, operator_id}),
+      await SecureStore.setItemAsync('operator_id', operator_id);
+      await api.setAuthToken(token);
+
+      // Store non-sensitive data
+      await AsyncStorage.setItem('first_name', first_name);
+      await AsyncStorage.setItem('last_name', last_name);
+
+      // Fetch and save opeartor
+      const operatorResponse = await api.get<Operator>(
+        `operator/${operator_id}/`,
       );
 
-      // Set in state
       setUser({first_name, last_name, operator_id});
-      // console.log('User: ', user);
-
+      setOperator(operatorResponse);
       setSession(true);
     } catch (error: any) {
       throw error;
@@ -91,14 +91,19 @@ export default function AuthProvider({children}: PropsWithChildren) {
   };
 
   // Sign out function
-  const logOut = async () => {
-    // Remove from SecureStore
-    await SecureStore.deleteItemAsync('authToken');
-    await SecureStore.deleteItemAsync('user');
+  const logOut = async (resetAppData: () => Promise<void>) => {
+    console.log('Logging out');
 
-    // Clear state
+    await SecureStore.deleteItemAsync('user');
+    await AsyncStorage.removeItem('first_name');
+    await AsyncStorage.removeItem('last_name');
+    await api.clearAuthToken();
+
     setUser(null);
+    setOperator(null);
     setSession(false);
+
+    await resetAppData();
   };
 
   return (
@@ -111,3 +116,21 @@ export default function AuthProvider({children}: PropsWithChildren) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+
+async function loadSessionFromStorage(): Promise<{
+  token: string | null;
+  operator_id: string | null;
+  first_name: string | null;
+  last_name: string | null;
+}> {
+  try {
+    const token = await api.loadToken();
+    const operator_id = await SecureStore.getItemAsync('operator_id');
+    const first_name = await AsyncStorage.getItem('first_name');
+    const last_name = await AsyncStorage.getItem('last_name');
+
+    return {token, operator_id, first_name, last_name};
+  } catch (error) {
+    return {token: null, operator_id: null, first_name: null, last_name: null};
+  }
+}

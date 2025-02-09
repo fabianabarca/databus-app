@@ -117,7 +117,7 @@ export type User = {
   operator_id: string;
   first_name: string;
   last_name: string;
-}
+};
 
 export type Position = {
   journey_id: number;
@@ -171,8 +171,18 @@ export type Vehicle = {
 };
 
 export type Provider = {
-  url: string,
+  url: string;
   agency: string[];
   name: string;
   description: string;
+};
+
+export type Agency = {
+  name: string;
+  id: number;
+};
+
+export type Item<T> = {
+  label: string;
+  value: T;
 };
