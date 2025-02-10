@@ -54,6 +54,7 @@ export class Api {
     };
 
     // console.log('Headers: ', headers, ' | Endpoint: ', endpoint);
+    // console.log('Options: ', options);
 
     try {
       const response = await fetch(`${baseUrl}${endpoint}`, {
@@ -99,6 +100,13 @@ export class Api {
   public async patch<T, U>(endpoint: string, body: U): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  public async put<T, U>(endpoint: string, body: U): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PUT',
       body: JSON.stringify(body),
     });
   }

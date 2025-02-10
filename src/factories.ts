@@ -6,14 +6,29 @@ import {
   Vehicle,
 } from '@/types';
 
+const DEFAULT_PROVIDER = {
+  vehicle: false,
+  operator: false,
+  journey: false,
+  position: false,
+  progression: false,
+  occupancy: false,
+  conditions: false,
+  emissions: false,
+  travelers: false,
+  authorizations: false,
+  fares: false,
+  transfers: false,
+  alerts: false,
+};
 export function createEquipmentDetails(
   partialEquipmentDetails: Partial<
     Omit<
       EquipmentDetails,
-      | 'provider_id'
-      | 'agency_id'
-      | 'vehicle_id'
-      | 'serial_number'
+      | 'agency'
+      | 'data_provider'
+      | 'user'
+      | 'vehicle'
       | 'brand'
       | 'model'
       | 'software_version'
@@ -21,41 +36,28 @@ export function createEquipmentDetails(
   > &
     Pick<
       EquipmentDetails,
-      | 'provider_id'
-      | 'agency_id'
-      | 'vehicle_id'
-      | 'serial_number'
+      | 'agency'
+      | 'data_provider'
+      | 'user'
+      | 'vehicle'
       | 'brand'
       | 'model'
       | 'software_version'
     >,
 ): EquipmentDetails {
   return {
-    provider_id: partialEquipmentDetails.provider_id,
-    agency_id: partialEquipmentDetails.agency_id,
-    vehicle_id: partialEquipmentDetails.vehicle_id,
-    serial_number: partialEquipmentDetails.serial_number,
+    agency: partialEquipmentDetails.agency,
+    data_provider: partialEquipmentDetails.data_provider,
+    user: partialEquipmentDetails.user,
+    vehicle: partialEquipmentDetails.vehicle,
     brand: partialEquipmentDetails.brand,
     model: partialEquipmentDetails.model,
     software_version: partialEquipmentDetails.software_version,
-    provider: partialEquipmentDetails.provider
-      ? {
-          vehicle: partialEquipmentDetails.provider.vehicle ?? false,
-          operator: partialEquipmentDetails.provider.operator ?? false,
-          journey: partialEquipmentDetails.provider.journey ?? false,
-          position: partialEquipmentDetails.provider.position ?? false,
-          progression: partialEquipmentDetails.provider.progression ?? false,
-          occupancy: partialEquipmentDetails.provider.occupancy ?? false,
-          conditions: partialEquipmentDetails.provider.conditions ?? false,
-          emissions: partialEquipmentDetails.provider.emissions ?? false,
-          travelers: partialEquipmentDetails.provider.travelers ?? false,
-          authorizations:
-            partialEquipmentDetails.provider.authorizations ?? false,
-          fares: partialEquipmentDetails.provider.fares ?? false,
-          transfers: partialEquipmentDetails.provider.transfers ?? false,
-          alerts: partialEquipmentDetails.provider.travelers ?? false,
-        }
-      : undefined,
+
+    provider: {
+      ...DEFAULT_PROVIDER,
+      ...partialEquipmentDetails.provider,
+    },
   };
 }
 
@@ -94,7 +96,8 @@ export function createJourneyDetails(
     shape_id: partialJourneyDetails.shape_id,
     start_date: partialJourneyDetails.start_date,
     start_time: partialJourneyDetails.start_time ?? Date.now(),
-    schedule_relationship: partialJourneyDetails.schedule_relationship ?? 'SCHEDULED',
+    schedule_relationship:
+      partialJourneyDetails.schedule_relationship ?? 'SCHEDULED',
     journey_status: partialJourneyDetails.journey_status ?? 'IN_PROGRESS',
   };
 }

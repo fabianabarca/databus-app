@@ -40,14 +40,16 @@ export type Equipment = {
 };
 
 export type EquipmentDetails = {
-  provider_id: string;
-  agency_id: string;
-  vehicle_id: string;
+  agency: number[];
+  equipment: string;
+  user: number;
+  vehicle: string;
+  data_provider: string;
   serial_number: string;
   brand: string;
   model: string;
   software_version: string;
-  provider?: {
+  provider: {
     vehicle?: boolean;
     operator?: boolean;
     journey?: boolean;

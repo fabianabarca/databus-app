@@ -68,6 +68,7 @@ export default function AuthProvider({children}: PropsWithChildren) {
     try {
       const response = await api.logIn(username, password);
       const {first_name, last_name, operator_id, token} = response;
+      console.log(response);
 
       // Store in SecureStore
       await SecureStore.setItemAsync('operator_id', operator_id);
@@ -81,6 +82,8 @@ export default function AuthProvider({children}: PropsWithChildren) {
       const operatorResponse = await api.get<Operator>(
         `operator/${operator_id}/`,
       );
+
+      console.log('Response operator: ', operatorResponse);
 
       setUser({first_name, last_name, operator_id});
       setOperator(operatorResponse);
@@ -104,6 +107,7 @@ export default function AuthProvider({children}: PropsWithChildren) {
     setSession(false);
 
     await resetAppData();
+    console.log('logged out');
   };
 
   return (

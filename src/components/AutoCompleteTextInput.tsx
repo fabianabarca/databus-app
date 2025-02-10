@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
-  // Platform,
+  Platform,
   // KeyboardAvoidingView,
   View,
   FlatList,
@@ -176,29 +176,33 @@ const AutocompleteTextInput = ({
       {error && <HelperText type="error">{error}</HelperText>}
 
       {filteredData.length > 0 && (
-        <FlatList
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={handleScroll}
-          style={styles.suggestionList}
-          data={filteredData}
-          keyExtractor={(item: string) => item}
-          renderItem={({item}: {item: string}) => (
-            <TouchableOpacity
-              activeOpacity={0.1}
-              onPress={() => handleSuggestionSelect(item)}
-            >
-              <View style={styles.suggestionItem}>
-                <Text>{item}</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
+        <View style={styles.suggestionListContainer}>
+          <FlatList
+            keyboardShouldPersistTaps="handled"
+            onScrollBeginDrag={handleScroll}
+            style={styles.suggestionList}
+            data={filteredData}
+            keyExtractor={(item: string) => item}
+            renderItem={({item}: {item: string}) => (
+              <TouchableOpacity
+                activeOpacity={0.1}
+                onPress={() => handleSuggestionSelect(item)}
+              >
+                <View style={styles.suggestionItem}>
+                  <Text>{item}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
       )}
     </View>
   );
 };
 
 const useStyles = () => {
+  const colorScheme = useColorScheme() as 'light' | 'dark';
+
   return StyleSheet.create({
     container: {
       width: '100%',
@@ -214,25 +218,30 @@ const useStyles = () => {
       padding: 10,
     },
     suggestionList: {
-      backgroundColor: '#CDDEEB',
-      borderRadius: 4,
+      maxHeight: 200,
+    },
+    suggestionListContainer: {
       position: 'absolute',
       top: 68,
       left: 0,
       right: 0,
-      zIndex: 1,
-      maxHeight: 200,
+      backgroundColor: Colors.notFocusColor,
+      borderRadius: 4,
       paddingTop: 5,
       paddingBottom: 5,
+      zIndex: 10, // Keep it above other elements
 
-      // Shadow properties for iOS
-      shadowColor: '#000',
-      shadowOffset: {width: 10, height: 4},
-      shadowOpacity: 0.5,
-      shadowRadius: 5,
-
-      // Elevation for Android
-      elevation: 5,
+      ...Platform.select({
+        ios: {
+          shadowColor: Colors[colorScheme].text,
+          shadowOffset: {width: 0, height: 0},
+          shadowOpacity: 0.5,
+          shadowRadius: 2,
+        },
+        android: {
+          elevation: 5, // Shadow for Android
+        },
+      }),
     },
   });
 };

@@ -9,17 +9,20 @@ export const useHomeStyles = () => {
       flex: 1,
       backgroundColor: Colors[colorScheme].background,
       alignItems: 'center',
-      // justifyContent: "center",
-      paddingBottom: 24,
+      // justifyContent: 'center',
+      alignContent: 'center',
     },
     content: {
       flex: 1,
-      width: '100%',
-      alignItems: 'center',
-      backgroundColor: Colors[colorScheme].background,
-      paddingTop: 48,
-      paddingBottom: 16,
-      paddingHorizontal: 24,
+      position: 'absolute', // Puts it behind everything
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      justifyContent: 'center', // Centers vertically
+      alignItems: 'center', // Centers horizontally
+      // backgroundColor: 'rgba(0,0,255,0.2)', // Light transparent blue
+      zIndex: 0, // Keeps it in the background
     },
 
     description: {
@@ -31,21 +34,24 @@ export const useHomeStyles = () => {
     },
 
     button: {
-      width: '80%',
+      width: '40%',
+      height: '8%',
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 16,
-      paddingHorizontal: 16,
-      backgroundColor: '#6DC067',
-      borderRadius: 8,
+      marginLeft: 'auto',
+      marginTop: 'auto',
+      marginRight: 15,
+      marginBottom: 15,
+      backgroundColor: Colors.secondaryColor,
+      borderRadius: 16,
       gap: 16,
     },
 
     buttonText: {
       fontFamily: 'Roboto',
       fontSize: 16,
-      color: '#FAFAFA',
+      color: '#FFFBFB',
       fontWeight: 'bold',
     },
   });

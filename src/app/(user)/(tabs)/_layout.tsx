@@ -3,13 +3,21 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
-import {Tabs} from 'expo-router';
+import {Redirect, Tabs} from 'expo-router';
 import {useColorScheme} from 'react-native';
 
 import {Colors} from '@constants/Colors';
+import {useAppData} from '@/src/providers/AppDataProvider';
+
+const switchProfiles = false;
 
 export default function TabsLayout() {
   const colorScheme = useColorScheme();
+  const {equipmentId} = useAppData();
+
+  if (!equipmentId || switchProfiles) {
+    return <Redirect href={'/(user)/profile-setup'} />;
+  }
   return (
     <Tabs
       screenOptions={{

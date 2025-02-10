@@ -4,7 +4,7 @@ import {useAuth} from '@/src/providers/AuthProvider';
 import {ActivityIndicator} from 'react-native-paper';
 import {useAppData} from '@/src/providers/AppDataProvider';
 
-export default function TabLayout() {
+export default function ScreenLayout() {
   const {loading, session} = useAuth();
   const {loading: isDataLoading} = useAppData();
 

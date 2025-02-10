@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 import {useColorScheme} from '@hooks/useColorScheme';
 
 import {Colors} from '@constants/Colors';
@@ -12,7 +12,6 @@ export const useConfigurationStyles = () => {
       backgroundColor: Colors[colorScheme].background,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingBottom: 24,
     },
     content: {
       flex: 1,
@@ -20,14 +19,13 @@ export const useConfigurationStyles = () => {
       alignItems: 'center',
       backgroundColor: Colors[colorScheme].background,
       paddingTop: 48,
-      paddingBottom: 16,
       paddingHorizontal: 24,
     },
 
     formText: {
       fontFamily: 'Roboto',
       fontSize: 20,
-      color: '#000',
+      color: Colors[colorScheme].text,
       fontWeight: 'bold',
       marginBottom: 16,
     },
@@ -43,25 +41,6 @@ export const useConfigurationStyles = () => {
       width: '100%',
     },
 
-    formButton: {
-      width: '100%',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-      paddingHorizontal: 16,
-      backgroundColor: '#FFE06A',
-      borderRadius: 8,
-      gap: 16,
-    },
-
-    formTextButton: {
-      fontFamily: 'Roboto',
-      fontSize: 16,
-      color: '#000',
-      fontWeight: 'bold',
-    },
-
     tripContainer: {
       gap: 8,
       alignItems: 'center',
@@ -69,37 +48,22 @@ export const useConfigurationStyles = () => {
       marginVertical: 'auto',
     },
 
-    trip: {
-      fontFamily: 'Roboto',
-      fontSize: 16,
-      color: '#666666',
-      fontWeight: 'bold',
-    },
-
-    tripHour: {
-      fontFamily: 'Roboto',
-      fontSize: 32,
-      color: '#000',
-      fontWeight: 'bold',
-    },
-
-    startTripButton: {
-      width: '90%',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 16,
-      paddingHorizontal: 16,
-      backgroundColor: '#6DC067',
-      borderRadius: 8,
-      gap: 16,
-    },
-
-    buttonText: {
-      fontFamily: 'Roboto',
-      fontSize: 16,
-      color: '#FAFAFA',
-      fontWeight: 'bold',
+    tripListContainer: {
+      width: '95%',
+      height: '45%',
+      marginBottom: 10,
+      marginTop: 50,
+      ...Platform.select({
+        ios: {
+          shadowColor: Colors[colorScheme].text,
+          shadowOffset: {width: 0, height: 4},  
+          shadowOpacity: 0.25,
+          shadowRadius: colorScheme === 'light' ? 4 : 2,
+        },
+        android: {
+          elevation: 5, // Shadow for Android
+        },
+      }),
     },
   });
 };

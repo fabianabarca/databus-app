@@ -5,6 +5,8 @@ import React, {
   PropsWithChildren,
   useContext,
 } from 'react';
+
+import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {Agency} from '@/types';
@@ -19,7 +21,7 @@ type AppContextType = {
   // favorites: {label: string; id: string}[]; // Favorite agencies
   setAgency: (agency: Agency) => Promise<void>;
   setVehicle: (vehicle: string) => Promise<void>;
-  setEquipmentId: (equipment_id: string) => void;
+  setEquipment: (equipment_id: string) => Promise<void>;
   setJourneyId: (journey_id: string) => void;
   // addLog: (log: string) => void;
   // addFavorite: (fav: {label: string; id: string}) => void;
@@ -35,7 +37,7 @@ export const AppContext = createContext<AppContextType>({
   journeyId: null,
   setAgency: async () => {},
   setVehicle: async () => {},
-  setEquipmentId: () => {},
+  setEquipment: async () => {},
   setJourneyId: () => {},
   resetAppData: async () => {},
   loading: true,
@@ -57,7 +59,10 @@ export default function AppDataProvider({children}: PropsWithChildren) {
       setLoading(true);
       const storedAgency = await AsyncStorage.getItem('agency');
       const storedVehicle = await AsyncStorage.getItem('vehicle');
-      const storedEquipmentId = await AsyncStorage.getItem('equipment');
+
+      const storedEquipmentId = await SecureStore.getItemAsync('equipment');
+
+      // console.log('Equipment ID: ', storedEquipmentId);
 
       // const storedLogs = await AsyncStorage.getItem('logs');
       // const storedFavorites = await AsyncStorage.getItem('favorites');
@@ -74,12 +79,10 @@ export default function AppDataProvider({children}: PropsWithChildren) {
     loadDataFromStorage();
   }, []);
 
-  // Save logs when updated
   // useEffect(() => {
   //   AsyncStorage.setItem('logs', JSON.stringify(logs));
   // }, [logs]);
 
-  // Save favorites when updated
   // useEffect(() => {
   //   AsyncStorage.setItem('favorites', JSON.stringify(favorites));
   // }, [favorites]);
@@ -103,19 +106,20 @@ export default function AppDataProvider({children}: PropsWithChildren) {
     await AsyncStorage.setItem('vehicle', String(newVehicle));
   };
 
-  const setEquipmentId = async (newEquipmentId: string) => {
+  const setEquipment = async (newEquipmentId: string) => {
     setEquipmentIdState(newEquipmentId);
-    await AsyncStorage.setItem('equipment', String(newEquipmentId));
+
+    await SecureStore.setItemAsync('equipment', newEquipmentId);
   };
 
   const resetAppData = async (): Promise<void> => {
     await AsyncStorage.removeItem('agency');
     await AsyncStorage.removeItem('vehicle');
-    await AsyncStorage.removeItem('equipment');
 
     await AsyncStorage.clear();
 
     // TODO: Reset log data.
+    console.log('Reset app data');
   };
 
   return (
@@ -129,7 +133,7 @@ export default function AppDataProvider({children}: PropsWithChildren) {
         // favorites,
         setAgency,
         setVehicle,
-        setEquipmentId,
+        setEquipment,
         setJourneyId,
         // addLog,
         // addFavorite,
